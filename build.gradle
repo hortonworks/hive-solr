@@ -38,6 +38,7 @@ subprojects {
 
     repositories {
       mavenLocal()
+      maven { url 'https://nexus-private.hortonworks.com/nexus/content/groups/public' }
       jcenter()
       mavenCentral()
     }
