@@ -1,0 +1,32 @@
+= solr-hadoop-common
+
+Shared code for Lucidworks Hadoop ecosystem connectors.
+
+The project is designed to be a submodule. To build it, go to one of the main projects and build it from there.
+
+Main projects:
+
+* https://github.com/LucidWorks/hadoop-solr
+* https://github.com/LucidWorks/hive-solr
+* https://github.com/LucidWorks/pig-solr
+
+== solr-hadoop-io
+
+Provides the MapReduce Input (`LWMapRedInputFormat`) and Output (`LWMapReduceOutputFormat`) format.
+
+== solr-hadoop-document
+
+Implements the `LWDocument` interface based on `SolrInputDocument`.
+
+== solr-hadoop-testbase
+
+Provides the class `SolrCloudClusterSupport` as the basis of most tests that need an embedded Solr cluster for testing.
+
+The `SolrCloudClusterSupport` creates a `MiniSolrCloudCluster` in order to test the application.
+
+`LWMockDocument` is a mock Document to test the Solr indexing workflow.
+
+== solr-hadoop-tika
+
+Basic tika processing (more in DirectoryMapperIngest)
+

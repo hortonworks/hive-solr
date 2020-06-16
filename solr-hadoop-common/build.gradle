@@ -1,0 +1,153 @@
+project(":solr-hadoop-common:solr-hadoop-document") {
+
+    dependencies {
+        if (project.hasProperty("hadoop2Version")) {
+            hadoop2Compile("org.apache.hadoop:hadoop-client:${hadoop2Version}") {
+                exclude group: "org.fusesource.leveldbjni"
+                exclude group: "aopalliance"
+                exclude group: "org.apache.avro"
+                exclude group: "org.apache.zookeeper"
+                exclude group: "org.mortbay.jetty"
+                exclude group: "org.apache.httpcomponents"
+                exclude group: "com.google.protobuf"
+                exclude group: "io.netty"
+                exclude group: "jline"
+                exclude group: "com.sun.jersey"
+                exclude group: "log4j"
+            }
+            hadoop2Compile(project(path: ':solr-hadoop-common:solr-hadoop-io', configuration: 'hadoop2Runtime')) {
+                transitive = false
+            }
+        }
+        if (project.hasProperty("hadoop3Version")) {
+            hadoop3Compile("org.apache.hadoop:hadoop-client:${hadoop3Version}") {
+                exclude group: "org.fusesource.leveldbjni"
+                exclude group: "aopalliance"
+                exclude group: "org.apache.avro"
+                exclude group: "org.apache.zookeeper"
+                exclude group: "org.mortbay.jetty"
+                exclude group: "org.apache.httpcomponents"
+                exclude group: "com.google.protobuf"
+                exclude group: "io.netty"
+                exclude group: "jline"
+                exclude group: "com.sun.jersey"
+                exclude group: "log4j"
+            }
+            hadoop3Compile(project(path: ':solr-hadoop-common:solr-hadoop-io', configuration: 'hadoop3Runtime')) {
+                transitive = false
+            }
+        }
+        compile("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+        compile("org.apache.solr:solr-solrj:${solrVersion}") {
+            transitive = false
+        }
+
+        testCompile(project(':solr-hadoop-common:solr-hadoop-testbase'))
+    }
+}
+
+project(":solr-hadoop-common:solr-hadoop-io") {
+
+    configurations {
+        solrtest
+    }
+
+    dependencies {
+        compile("org.apache.solr:solr-solrj:${solrVersion}")
+        if (project.hasProperty("hadoop2Version")) {
+            hadoop2Compile("org.apache.hadoop:hadoop-client:${hadoop2Version}")
+        }
+        if (project.hasProperty("hadoop3Version")) {
+            hadoop3Compile("org.apache.hadoop:hadoop-client:${hadoop3Version}")
+        }
+        compile "com.google.inject:guice:4.0"
+        compile("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+        compile("org.apache.httpcomponents:httpcore:4.4.10")
+
+        testCompile 'junit:junit:4.12'
+        testCompile 'com.carrotsearch.randomizedtesting:junit4-ant:1.4.0'
+        testCompile "org.apache.solr:solr-test-framework:${solrVersion}"
+
+        testCompile 'com.github.tomakehurst:wiremock:1.58'
+
+        testCompile(project(':solr-hadoop-common:solr-hadoop-testbase')) {
+        }
+    }
+}
+
+project(":solr-hadoop-common:solr-hadoop-shaded-test-framework") {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    shadowJar {
+        zip64 true
+        mergeServiceFiles()
+        classifier = ''
+
+        relocate("org.eclipse.jetty", "solrshaded.org.eclipse.jetty")
+        relocate("org.apache.hadoop", "solrshaded.org.apache.hadoop")
+    }
+
+    dependencies {
+        compile "org.apache.solr:solr-test-framework:${solrVersion}"
+    }
+}
+
+project(":solr-hadoop-common:solr-hadoop-testbase") {
+    dependencies {
+        if (project.hasProperty("hadoop2Version")) {
+            hadoop2Compile "org.apache.hadoop:hadoop-client:${hadoop2Version}"
+            hadoop2Compile(project(path: ':solr-hadoop-common:solr-hadoop-document', configuration: 'hadoop2Runtime'))
+            hadoop2Compile(project(path: ':solr-hadoop-common:solr-hadoop-io', configuration: 'hadoop2Runtime')) {
+                transitive = false
+            }
+        }
+        if (project.hasProperty("hadoop3Version")) {
+            hadoop3Compile "org.apache.hadoop:hadoop-client:${hadoop3Version}"
+            hadoop3Compile(project(path: ':solr-hadoop-common:solr-hadoop-document', configuration: 'hadoop3Runtime'))
+            hadoop3Compile(project(path: ':solr-hadoop-common:solr-hadoop-io', configuration: 'hadoop3Runtime')) {
+                transitive = false
+            }
+        }
+
+        compile 'junit:junit:4.12'
+        compile(project(path: ":solr-hadoop-common:solr-hadoop-shaded-test-framework", configuration: 'shadow'))
+    }
+}
+
+project(":solr-hadoop-common:solr-hadoop-tika") {
+
+    apply plugin: 'com.github.johnrengelman.shadow'
+    shadowJar {
+        zip64 true
+        mergeServiceFiles()
+        classifier = ''
+        relocate 'org.apache.commons.compress', 'shaded.org.apache.commons.compress'
+        relocate 'org.objectweb.asm', 'shaded.org.objectweb.asm'
+        relocate 'com.fasterxml.jackson', 'shaded.com.fasterxml.jackson'
+        relocate 'org.tukaani.xz', 'shaded.org.tukaani.xz'
+        relocate 'org.apache.commons.csv', 'shaded.org.apache.commons.csv'
+    }
+    dependencies {
+        compile(project(':solr-hadoop-common:solr-hadoop-document')) {
+            transitive = false
+        }
+
+        compile(project(':solr-hadoop-common:solr-hadoop-io')) {
+            transitive = false
+        }
+
+        compile "org.apache.tika:tika-core:${tikaVersion}"
+        compile "org.apache.tika:tika-parsers:${tikaVersion}"
+
+        testCompile(project(':solr-hadoop-common:solr-hadoop-testbase')) {
+        }
+    }
+
+    publishing {
+        publications {
+            shadow(MavenPublication) {
+                project.shadow.component(it)
+            }
+        }
+    }
+}

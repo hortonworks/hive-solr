@@ -16,13 +16,13 @@ task wrapper(type: Wrapper) {
 
 defaultTasks 'dist'
 
-ext {
-  publishedProjects = subprojects - project(':solr-hadoop-common')
-}
+//ext {
+//  publishedProjects = subprojects - project(':solr-hadoop-common')
+//}
 
 subprojects {
 
-  if (project in publishedProjects) {
+//  if (project in publishedProjects) {
 
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
@@ -89,7 +89,7 @@ subprojects {
 
     task dist(dependsOn: "publishToMavenLocal") {
     }
-  }
+//  }
 
 }
 
