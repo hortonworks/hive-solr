@@ -59,6 +59,7 @@ public class SolrCloudClusterSupport {
 
   @BeforeClass
   public static void startCluster() throws Exception {
+    System.setProperty("jetty.testMode", "true");
     TEMP_DIR = Files.createTempDirectory("MiniSolrCloudCluster");
 
     JettyConfig.Builder jettyConfig = JettyConfig.builder();
