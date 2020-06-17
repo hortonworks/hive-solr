@@ -38,7 +38,8 @@ subprojects {
 
     repositories {
       mavenLocal()
-      maven { url 'https://nexus-private.hortonworks.com/nexus/content/groups/public' }
+      maven { url mavenUrl }
+      maven { url gbnUrl }
       jcenter()
       mavenCentral()
     }
