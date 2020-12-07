@@ -128,12 +128,12 @@ project('solr-hive-core') {
 
     testCompile 'com.carrotsearch.randomizedtesting:junit4-ant:1.4.0'
     testCompile "org.apache.lucene:lucene-analyzers-common:${solrVersion}"
-    testCompile "commons-collections:commons-collections:3.2.1"
+    testCompile "commons-collections:commons-collections:${collections3Version}"
 
     testCompile ("org.apache.solr:solr-test-framework:${solrVersion}") {
       exclude group: 'junit'
     }
-    testCompile "junit:junit:4.12"
+    testCompile "junit:junit:${junit4Version}"
     testCompile (project(':solr-hadoop-common:solr-hadoop-testbase')) {
       transitive = false
     }

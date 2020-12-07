@@ -37,7 +37,7 @@ project(":solr-hadoop-common:solr-hadoop-document") {
                 transitive = false
             }
         }
-        compile("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+        compile("com.fasterxml.jackson.core:jackson-databind:${jackson2databindVersion}")
         compile("org.apache.solr:solr-solrj:${solrVersion}") {
             transitive = false
         }
@@ -60,11 +60,11 @@ project(":solr-hadoop-common:solr-hadoop-io") {
         if (project.hasProperty("hadoop3Version")) {
             hadoop3Compile("org.apache.hadoop:hadoop-client:${hadoop3Version}")
         }
-        compile "com.google.inject:guice:4.0"
-        compile("com.fasterxml.jackson.core:jackson-databind:2.10.0")
-        compile("org.apache.httpcomponents:httpcore:4.4.10")
+        compile "com.google.inject:guice:${guiceVersion}"
+        compile("com.fasterxml.jackson.core:jackson-databind:${jackson2databindVersion}")
+        compile("org.apache.httpcomponents:httpcore:${httpcoreVersion}")
 
-        testCompile 'junit:junit:4.12'
+        testCompile "junit:junit:${junit4Version}"
         testCompile 'com.carrotsearch.randomizedtesting:junit4-ant:1.4.0'
         testCompile "org.apache.solr:solr-test-framework:${solrVersion}"
 
@@ -109,7 +109,7 @@ project(":solr-hadoop-common:solr-hadoop-testbase") {
             }
         }
 
-        compile 'junit:junit:4.12'
+        compile "junit:junit:${junit4Version}"
         compile(project(path: ":solr-hadoop-common:solr-hadoop-shaded-test-framework", configuration: 'shadow'))
     }
 }
