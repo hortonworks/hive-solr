@@ -1,11 +1,13 @@
 package com.lucidworks.hadoop.security;
 
+import com.sun.security.auth.login.ConfigFile;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.Krb5HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.AppConfigurationEntry;
 import java.util.Optional;
 
 public class SolrSecurity {
@@ -22,13 +24,7 @@ public class SolrSecurity {
   public static void setSecurityConfig(Configuration job) {
     final String jaasFile = job.get(LWW_JAAS_FILE);
     if (jaasFile != null) {
-      log.debug("Using kerberized Solr.");
-      System.setProperty("java.security.auth.login.config", jaasFile);
-      final String appname = job.get(LWW_JAAS_APPNAME, "Client");
-      System.setProperty("solr.kerberos.jaas.appname", appname);
-
-      final Krb5HttpClientBuilder builder = new Krb5HttpClientBuilder();
-      HttpClientUtil.setHttpClientBuilder(builder.getHttpClientBuilder(Optional.empty()));
+      setupJassFile(job, jaasFile);
     }
     final String keystore = job.get(LWW_KEYSTORE);
     if (keystore != null) {
@@ -49,4 +45,46 @@ public class SolrSecurity {
       System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
     }
   }
+
+  private static void setupJassFile(Configuration job, String jaasFile) {
+    log.info("Using kerberized Solr. "+ jaasFile);
+    final javax.security.auth.login.Configuration hiveSolrJassConfiguration = new HiveSolrJaasConfiguration(jaasFile);
+    javax.security.auth.login.Configuration.setConfiguration(hiveSolrJassConfiguration);
+    Krb5HttpClientBuilder.regenerateJaasConfiguration();
+    final String appname = job.get(LWW_JAAS_APPNAME, "Client");
+    System.setProperty("solr.kerberos.jaas.appname", appname);
+
+    final Krb5HttpClientBuilder builder = new Krb5HttpClientBuilder();
+    HttpClientUtil.setHttpClientBuilder(builder.getHttpClientBuilder(Optional.empty()));
+  }
+
+  static class HiveSolrJaasConfiguration extends javax.security.auth.login.Configuration {
+
+    private javax.security.auth.login.Configuration jaasConfig;
+    private javax.security.auth.login.Configuration baseConfig;
+
+    public HiveSolrJaasConfiguration(String jaasFile) {
+      try {
+        baseConfig = javax.security.auth.login.Configuration.getConfiguration();
+      } catch (SecurityException e) {
+        baseConfig = null;
+      }
+      System.setProperty("java.security.auth.login.config", jaasFile);
+      // this creates a jaas config based on the java.security.auth.login.config system property
+      jaasConfig = new ConfigFile();
+    }
+
+    @Override
+    public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+      AppConfigurationEntry[] jaasConfigEntries = jaasConfig.getAppConfigurationEntry(name);
+      if (jaasConfigEntries != null) {
+        return jaasConfigEntries;
+      } else if (baseConfig != null) {
+        return baseConfig.getAppConfigurationEntry(name);
+      } else {
+        return null;
+      }
+    }
+  }
+
 }
